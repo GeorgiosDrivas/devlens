@@ -1,0 +1,16 @@
+{
+  "name": "devlens",
+  "version": "0.1.0",
+  "description": "CLI to generate project metadata for agents",
+  "main": "lib/index.js",
+  "bin": {
+    "devlens": "bin/devlens"
+  },
+  "scripts": {
+    "start": "node bin/devlens",
+    "test": "node --check lib/index.js"
+  },
+  "author": "",
+  "license": "MIT",
+  "type": "commonjs"
+}

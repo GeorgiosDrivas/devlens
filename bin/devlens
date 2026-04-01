@@ -1,0 +1,400 @@
+#!/usr/bin/env node
+const fs = require("fs");
+const path = require("path");
+const { promises: fsp } = fs;
+
+const root = process.cwd();
+
+const JS_EXTS = [".js", ".jsx", ".ts", ".tsx", ".mjs", ".cjs"];
+
+async function pathExists(p) {
+  try {
+    await fsp.access(p);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+async function readJson(filePath) {
+  try {
+    const raw = await fsp.readFile(filePath, "utf8");
+    return JSON.parse(raw);
+  } catch (err) {
+    return null;
+  }
+}
+
+async function walk(dir, filter) {
+  const results = [];
+  const entries = await fsp.readdir(dir, { withFileTypes: true });
+  for (const entry of entries) {
+    const full = path.join(dir, entry.name);
+    if (entry.isDirectory()) {
+      if (
+        entry.name === "node_modules" ||
+        entry.name === ".git" ||
+        entry.name === ".devlens"
+      )
+        continue;
+      results.push(...(await walk(full, filter)));
+    } else if (!filter || filter(full)) {
+      results.push(full);
+    }
+  }
+  return results;
+}
+
+function normalizeRoutePath(routePath) {
+  if (!routePath || routePath === ".") return "/";
+  let p = routePath.replace(/\\\\/g, "/");
+  p = p.replace(/\/page\.[^/]+$/, "");
+  if (p.endsWith("/index")) p = p.slice(0, -"/index".length);
+  if (p === "" || p === ".") return "/";
+  p = "/" + p.replace(/^\//, "").replace(/\/page$/, "");
+  p = p.replace(/\/\//g, "/");
+  if (p === "") p = "/";
+  return p;
+}
+
+function detectFramework(packageJson, hasAppDir, hasPagesDir) {
+  const evidence = [];
+  let framework = { name: "unknown", confidence: 0, evidence };
+
+  const deps = (packageJson && packageJson.dependencies) || {};
+  const devDeps = (packageJson && packageJson.devDependencies) || {};
+
+  if (deps.next || devDeps.next) {
+    framework = {
+      name: "nextjs",
+      confidence: 0.98,
+      evidence: [...evidence, "package.json dependency: next"],
+    };
+  } else if (hasAppDir) {
+    framework = {
+      name: "nextjs",
+      confidence: 0.76,
+      evidence: [...evidence, "app/ directory found"],
+    };
+  } else if (hasPagesDir) {
+    framework = {
+      name: "nextjs",
+      confidence: 0.7,
+      evidence: [...evidence, "pages/ directory found"],
+    };
+  } else if (deps.react || devDeps.react) {
+    framework = {
+      name: "react",
+      confidence: 0.5,
+      evidence: [...evidence, "package.json dependency: react"],
+    };
+  }
+
+  return framework;
+}
+
+function collectEnvFromDotFiles(files) {
+  const envVars = {};
+  for (const file of files) {
+    const content = fs.readFileSync(file, "utf8");
+    content.split(/\r?\n/).forEach((line) => {
+      const trimmed = line.split("#")[0].trim();
+      if (!trimmed || trimmed.startsWith("#")) return;
+      const eq = trimmed.indexOf("=");
+      if (eq > 0) {
+        const name = trimmed.slice(0, eq).trim();
+        if (name) {
+          if (!envVars[name]) envVars[name] = [];
+          envVars[name].push(path.relative(root, file));
+        }
+      }
+    });
+  }
+  return envVars;
+}
+
+function findEnvReferencesInText(text) {
+  const used = new Map();
+  const patterns = [
+    /process\.env\.([A-Za-z0-9_]+)/g,
+    /import\.meta\.env\.([A-Za-z0-9_]+)/g,
+    /process\.env\s*\[\s*['\"]([^'\"]+)['\"]\s*\]/g,
+  ];
+
+  for (const p of patterns) {
+    let m;
+    while ((m = p.exec(text)) !== null) {
+      used.set(m[1], true);
+    }
+  }
+  return Array.from(used.keys());
+}
+
+function getRoutePathFromAppFile(file) {
+  const relative = path
+    .relative(path.join(root, "app"), file)
+    .replace(/\\\\/g, "/");
+  if (!relative) return "/";
+  if (relative.startsWith("api/")) return null;
+  const noExt = relative.replace(/\.[^.]+$/, "");
+  if (!noExt.endsWith("/page") && noExt !== "page") return null;
+  const routeBase = noExt.replace(/\/page$/, "");
+  const route = routeBase === "" ? "/" : `/${routeBase}`;
+  return route.replace(/\/\//g, "/");
+}
+
+function getApiRouteFromAppFile(file) {
+  const relative = path
+    .relative(path.join(root, "app"), file)
+    .replace(/\\\\/g, "/");
+  if (!relative.startsWith("api/")) return null;
+  const noExt = relative.replace(/\.[^.]+$/, "");
+  const routeBase = noExt.replace(/^api/, "");
+  const route = `/api${routeBase === "" ? "" : routeBase}`;
+  return route.replace(/\/\//g, "/");
+}
+
+function deriveRouteFromPagesFile(file) {
+  const relative = path
+    .relative(path.join(root, "pages"), file)
+    .replace(/\\\\/g, "/");
+  if (!relative) return null;
+  const noExt = relative.replace(/\.[^.]+$/, "");
+  if (!noExt.endsWith("/index")) {
+    return `/${noExt}`.replace(/\/\//g, "/");
+  }
+  const route = noExt.replace(/\/index$/, "");
+  return route === "" ? "/" : `/${route}`;
+}
+
+function deriveApiRouteFromPagesFile(file) {
+  const relative = path
+    .relative(path.join(root, "pages"), file)
+    .replace(/\\\\/g, "/");
+  if (!relative.startsWith("api/")) return null;
+  const noExt = relative.replace(/\.[^.]+$/, "");
+  const route = `/${noExt}`;
+  return route.replace(/\/\//g, "/");
+}
+
+function extractMethodsFromFileText(text) {
+  const methods = new Set();
+  const re =
+    /(?:export\s+(?:async\s+)?(?:function|const|let|var|class)\s+)?(GET|POST|PUT|PATCH|DELETE|OPTIONS|HEAD)\b/gi;
+  let m;
+  while ((m = re.exec(text)) !== null) {
+    methods.add(m[1].toUpperCase());
+  }
+
+  const httpRe = /\b(?:GET|POST|PUT|PATCH|DELETE|OPTIONS|HEAD)\b/g;
+  let cc = 0;
+  while ((m = httpRe.exec(text)) !== null && cc < 5000) {
+    methods.add(m[0].toUpperCase());
+    cc++;
+  }
+
+  return Array.from(methods);
+}
+
+async function scan() {
+  const packageJson = (await readJson(path.join(root, "package.json"))) || {};
+  const projectName = packageJson.name || path.basename(root) || "my-app";
+
+  const appDir = path.join(root, "app");
+  const pagesDir = path.join(root, "pages");
+  const hasAppDir = await pathExists(appDir);
+  const hasPagesDir = await pathExists(pagesDir);
+
+  const framework = detectFramework(packageJson, hasAppDir, hasPagesDir);
+
+  const routes = [];
+  const apiRoutes = [];
+
+  if (hasAppDir) {
+    const appFiles = await walk(appDir, (f) =>
+      JS_EXTS.includes(path.extname(f)),
+    );
+    for (const file of appFiles) {
+      const route = getRoutePathFromAppFile(file);
+      const apiRoute = getApiRouteFromAppFile(file);
+      const faa = path.relative(root, file).replace(/\\\\/g, "/");
+      if (route) {
+        routes.push({ path: route, file: faa, type: "page" });
+      }
+      if (apiRoute) {
+        const fileContents = await fsp.readFile(file, "utf8");
+        const methods = extractMethodsFromFileText(fileContents);
+        apiRoutes.push({
+          path: apiRoute,
+          file: faa,
+          methods: methods.length ? methods : ["GET", "POST"],
+        });
+      }
+    }
+  }
+
+  if (hasPagesDir) {
+    const pagesFiles = await walk(pagesDir, (f) =>
+      JS_EXTS.includes(path.extname(f)),
+    );
+    for (const file of pagesFiles) {
+      const relative2 = path.relative(pagesDir, file).replace(/\\\\/g, "/");
+      if (!relative2.startsWith("api/")) {
+        const route = deriveRouteFromPagesFile(file);
+        if (route)
+          routes.push({
+            path: route,
+            file: path.relative(root, file).replace(/\\\\/g, "/"),
+            type: "page",
+          });
+      } else {
+        const apiRoute = deriveApiRouteFromPagesFile(file);
+        if (apiRoute) {
+          const fileContents = await fsp.readFile(file, "utf8");
+          const methods = extractMethodsFromFileText(fileContents);
+          apiRoutes.push({
+            path: apiRoute,
+            file: path.relative(root, file).replace(/\\\\/g, "/"),
+            methods: methods.length ? methods : ["GET", "POST"],
+          });
+        }
+      }
+    }
+  }
+
+  // env scanning
+  const envFiles = [];
+  const dotCandidates = [
+    ".env",
+    ".env.local",
+    ".env.development",
+    ".env.production",
+  ];
+  for (const envFile of dotCandidates) {
+    const full = path.join(root, envFile);
+    if (await pathExists(full)) envFiles.push(full);
+  }
+
+  const declaredEnv = collectEnvFromDotFiles(envFiles);
+
+  const allSourceFiles = await walk(root, (f) => {
+    if (
+      f.includes(`${path.sep}.git${path.sep}`) ||
+      f.includes(`${path.sep}node_modules${path.sep}`) ||
+      f.includes(`${path.sep}.devlens${path.sep}`)
+    )
+      return false;
+    const ext = path.extname(f).toLowerCase();
+    return [
+      ".js",
+      ".jsx",
+      ".ts",
+      ".tsx",
+      ".mjs",
+      ".cjs",
+      ".json",
+      ".md",
+      ".mdx",
+      ".prisma",
+    ].includes(ext);
+  });
+
+  const referencedEnv = {};
+  for (const file of allSourceFiles) {
+    const text = await fsp.readFile(file, "utf8");
+    const keys = findEnvReferencesInText(text);
+    for (const key of keys) {
+      if (!referencedEnv[key]) referencedEnv[key] = new Set();
+      referencedEnv[key].add(path.relative(root, file));
+    }
+  }
+
+  const usedEnv = [];
+  const usedNames = new Set();
+
+  for (const [name, files] of Object.entries(referencedEnv)) {
+    if (declaredEnv[name]) {
+      usedEnv.push({ name, files: Array.from(files).sort() });
+      usedNames.add(name);
+    }
+  }
+  for (const name of Object.keys(declaredEnv)) {
+    if (referencedEnv[name] && !usedNames.has(name)) {
+      // if referenced and declared, it's used, already in usedEnv on above
+    }
+  }
+
+  const unusedEnv = [];
+  for (const [name, filePaths] of Object.entries(declaredEnv)) {
+    if (!referencedEnv[name]) {
+      unusedEnv.push({
+        name,
+        declaredIn: Array.from(new Set(filePaths)).sort(),
+      });
+    }
+  }
+
+  const missingEnv = [];
+  for (const [name, files] of Object.entries(referencedEnv)) {
+    if (!declaredEnv[name]) {
+      missingEnv.push({ name, referencedIn: Array.from(files).sort() });
+    }
+  }
+
+  return {
+    project: {
+      name: projectName,
+      root: ".",
+      framework,
+    },
+    routes,
+    apiRoutes,
+    env: {
+      used: usedEnv.sort((a, b) => a.name.localeCompare(b.name)),
+      unused: unusedEnv.sort((a, b) => a.name.localeCompare(b.name)),
+      missing: missingEnv.sort((a, b) => a.name.localeCompare(b.name)),
+    },
+  };
+}
+
+async function ensureDevLensDir() {
+  const target = path.join(root, ".devlens");
+  await fsp.mkdir(target, { recursive: true });
+  return target;
+}
+
+async function runInit() {
+  const result = await scan();
+  await ensureDevLensDir();
+  const outputFile = path.join(root, ".devlens", "devlens.json");
+  await fsp.writeFile(outputFile, JSON.stringify(result, null, 2), "utf8");
+  console.log(`Written ${outputFile}`);
+}
+
+async function main() {
+  const args = process.argv.slice(2);
+  if (
+    args.length === 0 ||
+    args[0] === "help" ||
+    args[0] === "--help" ||
+    args[0] === "-h"
+  ) {
+    console.log("devlens init    # generate .devlens/devlens.json");
+    process.exit(0);
+  }
+
+  if (args[0] === "init") {
+    try {
+      await runInit();
+      process.exit(0);
+    } catch (err) {
+      console.error("error:", err.message || err);
+      process.exit(1);
+    }
+  }
+
+  console.error("Unknown command:", args[0]);
+  process.exit(1);
+}
+
+main();
