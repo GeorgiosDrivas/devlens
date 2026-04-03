@@ -45,18 +45,6 @@ async function walk(dir, filter) {
   return results;
 }
 
-function normalizeRoutePath(routePath) {
-  if (!routePath || routePath === ".") return "/";
-  let p = routePath.replace(/\\\\/g, "/");
-  p = p.replace(/\/page\.[^/]+$/, "");
-  if (p.endsWith("/index")) p = p.slice(0, -"/index".length);
-  if (p === "" || p === ".") return "/";
-  p = "/" + p.replace(/^\//, "").replace(/\/page$/, "");
-  p = p.replace(/\/\//g, "/");
-  if (p === "") p = "/";
-  return p;
-}
-
 function detectFramework(packageJson, hasAppDir, hasPagesDir) {
   const evidence = [];
   let framework = { name: "unknown", confidence: 0, evidence };
