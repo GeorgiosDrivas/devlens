@@ -363,7 +363,7 @@ async function main() {
     args[0] === "--help" ||
     args[0] === "-h"
   ) {
-    console.log("devlens init    # generate .devlens/devlens.json");
+    console.log("Run `devlens init` to generate .devlens/devlens.json");
     process.exit(0);
   }
 
