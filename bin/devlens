@@ -84,6 +84,8 @@ function detectFramework(packageJson, hasAppDir, hasPagesDir) {
 function collectEnvFromDotFiles(files) {
   const envVars = {};
   for (const file of files) {
+    if (file.includes(`${path.sep}node_modules${path.sep}`)) continue;
+
     const content = fs.readFileSync(file, "utf8");
     content.split(/\r?\n/).forEach((line) => {
       const trimmed = line.split("#")[0].trim();
