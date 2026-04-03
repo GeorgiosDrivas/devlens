@@ -1,7 +1,7 @@
 {
   "name": "@georgios-drivas/devlens",
   "version": "0.1.1",
-  "description": "CLI to generate project metadata for agents",
+  "description": "CLI that scans a project and generates JSON metadata for routes, API endpoints, and environment variables.",
   "bin": {
     "devlens": "bin/devlens"
   },
@@ -10,12 +10,33 @@
     "test": "node --check bin/devlens"
   },
   "files": [
-    "bin"
+    "bin",
+    "README.md"
   ],
+  "keywords": [
+    "cli",
+    "nextjs",
+    "react",
+    "routes",
+    "api",
+    "environment-variables",
+    "env",
+    "project-scanner",
+    "metadata",
+    "developer-tools"
+  ],
+  "homepage": "https://github.com/GeorgiosDrivas/devlens#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/GeorgiosDrivas/devlens.git"
+  },
+  "bugs": {
+    "url": "https://github.com/GeorgiosDrivas/devlens/issues"
+  },
   "engines": {
     "node": ">=18"
   },
-  "author": "",
+  "author": "Georgios Drivas",
   "license": "MIT",
   "type": "commonjs"
 }
