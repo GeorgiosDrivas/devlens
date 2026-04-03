@@ -1,43 +1,39 @@
 #!/usr/bin/env node
 
-const fs = require("fs");
-const path = require("path");
+const fs = require('fs');
+const path = require('path');
 const { promises: fsp } = fs;
 
 const root = process.cwd();
 
-const JS_EXTS = new Set([".js", ".jsx", ".ts", ".tsx", ".mjs", ".cjs"]);
+const JS_EXTS = new Set(['.js', '.jsx', '.ts', '.tsx', '.mjs', '.cjs']);
 const SOURCE_EXTS = new Set([
-  ".js",
-  ".jsx",
-  ".ts",
-  ".tsx",
-  ".mjs",
-  ".cjs",
-  ".json",
-  ".md",
-  ".mdx",
-  ".prisma",
+  '.js',
+  '.jsx',
+  '.ts',
+  '.tsx',
+  '.mjs',
+  '.cjs',
+  '.json',
+  '.md',
+  '.mdx',
+  '.prisma',
 ]);
 
 const IGNORED_DIRS = new Set([
-  "node_modules",
-  ".git",
-  ".devlens",
-  ".next",
-  "dist",
-  "build",
-  "coverage",
-  ".turbo",
-  ".vercel",
-  "out",
+  'node_modules',
+  '.git',
+  '.devlens',
+  '.next',
+  'dist',
+  'build',
+  'coverage',
+  '.turbo',
+  '.vercel',
+  'out',
 ]);
 
-const IGNORED_PATH_SEGMENTS = [
-  "generated",
-  "src/generated",
-  "prisma/generated",
-];
+const IGNORED_PATH_SEGMENTS = ['generated', 'src/generated', 'prisma/generated'];
 
 async function pathExists(p) {
   try {
@@ -50,7 +46,7 @@ async function pathExists(p) {
 
 async function readJson(filePath) {
   try {
-    const raw = await fsp.readFile(filePath, "utf8");
+    const raw = await fsp.readFile(filePath, 'utf8');
     return JSON.parse(raw);
   } catch {
     return null;
@@ -58,7 +54,7 @@ async function readJson(filePath) {
 }
 
 function normalizeSlashes(value) {
-  return value.replace(/\\/g, "/");
+  return value.replace(/\\/g, '/');
 }
 
 function toRelative(filePath) {
@@ -67,14 +63,14 @@ function toRelative(filePath) {
 
 function isIgnoredPath(fullPath) {
   const relative = toRelative(fullPath);
-  const parts = relative.split("/");
+  const parts = relative.split('/');
 
   if (parts.some((part) => IGNORED_DIRS.has(part))) {
     return true;
   }
 
   return IGNORED_PATH_SEGMENTS.some(
-    (segment) => relative === segment || relative.startsWith(`${segment}/`),
+    (segment) => relative === segment || relative.startsWith(`${segment}/`)
   );
 }
 
@@ -117,25 +113,25 @@ async function detectFramework(packageJson, hasAppDir, hasPagesDir) {
 
   if (deps.next || devDeps.next) {
     return {
-      name: "nextjs",
+      name: 'nextjs',
       confidence: 0.98,
-      evidence: ["package.json dependency: next"],
+      evidence: ['package.json dependency: next'],
     };
   }
 
   if (hasAppDir) {
     return {
-      name: "nextjs",
+      name: 'nextjs',
       confidence: 0.76,
-      evidence: ["app directory found"],
+      evidence: ['app directory found'],
     };
   }
 
   if (hasPagesDir) {
     return {
-      name: "nextjs",
+      name: 'nextjs',
       confidence: 0.7,
-      evidence: ["pages directory found"],
+      evidence: ['pages directory found'],
     };
   }
 
@@ -143,44 +139,44 @@ async function detectFramework(packageJson, hasAppDir, hasPagesDir) {
 
   if (deps.react || devDeps.react) {
     reactScore += 0.35;
-    evidence.push("package.json dependency: react");
+    evidence.push('package.json dependency: react');
   }
 
-  if (deps["react-dom"] || devDeps["react-dom"]) {
+  if (deps['react-dom'] || devDeps['react-dom']) {
     reactScore += 0.25;
-    evidence.push("package.json dependency: react-dom");
+    evidence.push('package.json dependency: react-dom');
   }
 
   if (
-    (await pathExists(path.join(root, "src", "main.jsx"))) ||
-    (await pathExists(path.join(root, "src", "main.tsx"))) ||
-    (await pathExists(path.join(root, "src", "index.jsx"))) ||
-    (await pathExists(path.join(root, "src", "index.tsx")))
+    (await pathExists(path.join(root, 'src', 'main.jsx'))) ||
+    (await pathExists(path.join(root, 'src', 'main.tsx'))) ||
+    (await pathExists(path.join(root, 'src', 'index.jsx'))) ||
+    (await pathExists(path.join(root, 'src', 'index.tsx')))
   ) {
     reactScore += 0.2;
-    evidence.push("React entry file found");
+    evidence.push('React entry file found');
   }
 
-  if (await pathExists(path.join(root, "index.html"))) {
+  if (await pathExists(path.join(root, 'index.html'))) {
     reactScore += 0.1;
-    evidence.push("index.html found");
+    evidence.push('index.html found');
   }
 
   if (deps.vite || devDeps.vite) {
     reactScore += 0.1;
-    evidence.push("package.json dependency: vite");
+    evidence.push('package.json dependency: vite');
   }
 
   if (reactScore > 0) {
     return {
-      name: "react",
+      name: 'react',
       confidence: Math.min(0.95, Number(reactScore.toFixed(2))),
       evidence,
     };
   }
 
   return {
-    name: "unknown",
+    name: 'unknown',
     confidence: 0,
     evidence: [],
   };
@@ -190,13 +186,13 @@ async function collectEnvFromDotFiles(files) {
   const envVars = {};
 
   for (const file of files) {
-    const content = await fsp.readFile(file, "utf8");
+    const content = await fsp.readFile(file, 'utf8');
 
     for (const line of content.split(/\r?\n/)) {
-      const noComment = line.split("#")[0].trim();
+      const noComment = line.split('#')[0].trim();
       if (!noComment) continue;
 
-      const eq = noComment.indexOf("=");
+      const eq = noComment.indexOf('=');
       if (eq <= 0) continue;
 
       const name = noComment.slice(0, eq).trim();
@@ -236,64 +232,64 @@ function findEnvReferencesInText(text) {
 function getRoutePathFromAppFile(appRoot, file) {
   const relative = normalizeSlashes(path.relative(appRoot, file));
   if (!relative) return null;
-  if (relative.startsWith("api/")) return null;
+  if (relative.startsWith('api/')) return null;
 
-  const noExt = relative.replace(/\.[^.]+$/, "");
+  const noExt = relative.replace(/\.[^.]+$/, '');
 
-  if (!(noExt === "page" || noExt.endsWith("/page"))) {
+  if (!(noExt === 'page' || noExt.endsWith('/page'))) {
     return null;
   }
 
-  const routeBase = noExt.replace(/\/page$/, "").replace(/^page$/, "");
-  const route = routeBase ? `/${routeBase}` : "/";
+  const routeBase = noExt.replace(/\/page$/, '').replace(/^page$/, '');
+  const route = routeBase ? `/${routeBase}` : '/';
 
-  return route.replace(/\/+/g, "/");
+  return route.replace(/\/+/g, '/');
 }
 
 function getApiRouteFromAppFile(appRoot, file) {
   const relative = normalizeSlashes(path.relative(appRoot, file));
-  if (!relative.startsWith("api/")) return null;
+  if (!relative.startsWith('api/')) return null;
 
-  const noExt = relative.replace(/\.[^.]+$/, "");
+  const noExt = relative.replace(/\.[^.]+$/, '');
 
-  if (!(noExt === "api/route" || noExt.endsWith("/route"))) {
+  if (!(noExt === 'api/route' || noExt.endsWith('/route'))) {
     return null;
   }
 
   const routeBase = noExt
-    .replace(/^api/, "")
-    .replace(/\/route$/, "")
-    .replace(/^$/, "");
+    .replace(/^api/, '')
+    .replace(/\/route$/, '')
+    .replace(/^$/, '');
 
   const route = `/api${routeBase}`;
 
-  return route.replace(/\/+/g, "/");
+  return route.replace(/\/+/g, '/');
 }
 
 function deriveRouteFromPagesFile(pagesRoot, file) {
   const relative = normalizeSlashes(path.relative(pagesRoot, file));
-  if (!relative || relative.startsWith("api/")) return null;
+  if (!relative || relative.startsWith('api/')) return null;
 
-  const noExt = relative.replace(/\.[^.]+$/, "");
+  const noExt = relative.replace(/\.[^.]+$/, '');
 
-  if (noExt === "_app" || noExt === "_document" || noExt === "_error") {
+  if (noExt === '_app' || noExt === '_document' || noExt === '_error') {
     return null;
   }
 
-  if (noExt === "index") return "/";
-  if (noExt.endsWith("/index")) {
-    return `/${noExt.replace(/\/index$/, "")}`.replace(/\/+/g, "/");
+  if (noExt === 'index') return '/';
+  if (noExt.endsWith('/index')) {
+    return `/${noExt.replace(/\/index$/, '')}`.replace(/\/+/g, '/');
   }
 
-  return `/${noExt}`.replace(/\/+/g, "/");
+  return `/${noExt}`.replace(/\/+/g, '/');
 }
 
 function deriveApiRouteFromPagesFile(pagesRoot, file) {
   const relative = normalizeSlashes(path.relative(pagesRoot, file));
-  if (!relative.startsWith("api/")) return null;
+  if (!relative.startsWith('api/')) return null;
 
-  const noExt = relative.replace(/\.[^.]+$/, "");
-  return `/${noExt}`.replace(/\/+/g, "/");
+  const noExt = relative.replace(/\.[^.]+$/, '');
+  return `/${noExt}`.replace(/\/+/g, '/');
 }
 
 function extractMethodsFromFileText(text) {
@@ -330,9 +326,7 @@ async function scanRoutes(appDir, pagesDir) {
   const apiRoutes = [];
 
   if (appDir) {
-    const appFiles = await walk(appDir, (file) =>
-      JS_EXTS.has(path.extname(file).toLowerCase()),
-    );
+    const appFiles = await walk(appDir, (file) => JS_EXTS.has(path.extname(file).toLowerCase()));
 
     for (const file of appFiles) {
       const route = getRoutePathFromAppFile(appDir, file);
@@ -343,43 +337,41 @@ async function scanRoutes(appDir, pagesDir) {
         routes.push({
           path: route,
           file: relativeFile,
-          type: "page",
+          type: 'page',
         });
       }
 
       if (apiRoute) {
-        const text = await fsp.readFile(file, "utf8");
+        const text = await fsp.readFile(file, 'utf8');
         const methods = extractMethodsFromFileText(text);
 
         apiRoutes.push({
           path: apiRoute,
           file: relativeFile,
-          methods: methods.length ? methods : ["GET", "POST"],
+          methods: methods.length ? methods : ['GET', 'POST'],
         });
       }
     }
   }
 
   if (pagesDir) {
-    const pageFiles = await walk(pagesDir, (file) =>
-      JS_EXTS.has(path.extname(file).toLowerCase()),
-    );
+    const pageFiles = await walk(pagesDir, (file) => JS_EXTS.has(path.extname(file).toLowerCase()));
 
     for (const file of pageFiles) {
       const relativeFile = toRelative(file);
       const relativeToPages = normalizeSlashes(path.relative(pagesDir, file));
 
-      if (relativeToPages.startsWith("api/")) {
+      if (relativeToPages.startsWith('api/')) {
         const apiRoute = deriveApiRouteFromPagesFile(pagesDir, file);
 
         if (apiRoute) {
-          const text = await fsp.readFile(file, "utf8");
+          const text = await fsp.readFile(file, 'utf8');
           const methods = extractMethodsFromFileText(text);
 
           apiRoutes.push({
             path: apiRoute,
             file: relativeFile,
-            methods: methods.length ? methods : ["GET", "POST"],
+            methods: methods.length ? methods : ['GET', 'POST'],
           });
         }
       } else {
@@ -389,7 +381,7 @@ async function scanRoutes(appDir, pagesDir) {
           routes.push({
             path: route,
             file: relativeFile,
-            type: "page",
+            type: 'page',
           });
         }
       }
@@ -398,28 +390,18 @@ async function scanRoutes(appDir, pagesDir) {
 
   return {
     routes: uniqueBy(
-      routes.sort(
-        (a, b) => a.path.localeCompare(b.path) || a.file.localeCompare(b.file),
-      ),
-      (item) => `${item.path}::${item.file}`,
+      routes.sort((a, b) => a.path.localeCompare(b.path) || a.file.localeCompare(b.file)),
+      (item) => `${item.path}::${item.file}`
     ),
     apiRoutes: uniqueBy(
-      apiRoutes.sort(
-        (a, b) => a.path.localeCompare(b.path) || a.file.localeCompare(b.file),
-      ),
-      (item) => `${item.path}::${item.file}`,
+      apiRoutes.sort((a, b) => a.path.localeCompare(b.path) || a.file.localeCompare(b.file)),
+      (item) => `${item.path}::${item.file}`
     ),
   };
 }
 
 async function scanEnv() {
-  const dotCandidates = [
-    ".env",
-    ".env.local",
-    ".env.development",
-    ".env.production",
-    ".env.test",
-  ];
+  const dotCandidates = ['.env', '.env.local', '.env.development', '.env.production', '.env.test'];
 
   const envFiles = [];
   for (const envFile of dotCandidates) {
@@ -439,7 +421,7 @@ async function scanEnv() {
   const referencedEnv = {};
 
   for (const file of allSourceFiles) {
-    const text = await fsp.readFile(file, "utf8");
+    const text = await fsp.readFile(file, 'utf8');
     const keys = findEnvReferencesInText(text);
 
     for (const key of keys) {
@@ -489,13 +471,7 @@ function hasEnvData(env) {
 }
 
 async function scanEnv() {
-  const dotCandidates = [
-    ".env",
-    ".env.local",
-    ".env.development",
-    ".env.production",
-    ".env.test",
-  ];
+  const dotCandidates = ['.env', '.env.local', '.env.development', '.env.production', '.env.test'];
 
   const envFiles = [];
   for (const envFile of dotCandidates) {
@@ -515,7 +491,7 @@ async function scanEnv() {
   const referencedEnv = {};
 
   for (const file of allSourceFiles) {
-    const text = await fsp.readFile(file, "utf8");
+    const text = await fsp.readFile(file, 'utf8');
     const keys = findEnvReferencesInText(text);
 
     for (const key of keys) {
@@ -563,17 +539,17 @@ async function scanEnv() {
 }
 
 async function scan() {
-  const packageJson = (await readJson(path.join(root, "package.json"))) || {};
-  const projectName = packageJson.name || path.basename(root) || "my-app";
+  const packageJson = (await readJson(path.join(root, 'package.json'))) || {};
+  const projectName = packageJson.name || path.basename(root) || 'my-app';
 
   const appDir = await findFirstExistingPath([
-    path.join(root, "app"),
-    path.join(root, "src", "app"),
+    path.join(root, 'app'),
+    path.join(root, 'src', 'app'),
   ]);
 
   const pagesDir = await findFirstExistingPath([
-    path.join(root, "pages"),
-    path.join(root, "src", "pages"),
+    path.join(root, 'pages'),
+    path.join(root, 'src', 'pages'),
   ]);
 
   const framework = await detectFramework(packageJson, !!appDir, !!pagesDir);
@@ -583,7 +559,7 @@ async function scan() {
   const result = {
     project: {
       name: projectName,
-      root: ".",
+      root: '.',
       framework,
     },
   };
@@ -604,7 +580,7 @@ async function scan() {
 }
 
 async function ensureDevLensDir() {
-  const target = path.join(root, ".devlens");
+  const target = path.join(root, '.devlens');
   await fsp.mkdir(target, { recursive: true });
   return target;
 }
@@ -613,34 +589,45 @@ async function runInit() {
   const result = await scan();
   await ensureDevLensDir();
 
-  const outputFile = path.join(root, ".devlens", "devlens.json");
-  await fsp.writeFile(outputFile, JSON.stringify(result, null, 2), "utf8");
+  const outputFile = path.join(root, '.devlens', 'devlens.json');
+  await fsp.writeFile(outputFile, JSON.stringify(result, null, 2), 'utf8');
 
   console.log(`Written ${outputFile}`);
 }
 
 function printHelp() {
-  console.log("Run `devlens init` to generate .devlens/devlens.json");
+  console.log('Run `devlens init` to generate .devlens/devlens.json');
 }
 
 async function main() {
   const args = process.argv.slice(2);
   const command = args[0];
 
-  if (command === "help" || command === "--help" || command === "-h") {
-    console.log("Usage: devlens [command]\n");
-    console.log("Commands:");
-    console.log("  init     Generate .devlens/devlens.json");
+  if (command === 'help' || command === '--help' || command === '-h') {
+    console.log('Usage: devlens [command]\n');
+    console.log('Commands:');
+    console.log('  init     Generate .devlens/devlens.json');
     console.log('\nIf no command is provided, "init" is used by default.');
     process.exit(0);
   }
 
-  if (!command || command === "init") {
+  if (!command || command === 'init') {
     try {
       await runInit();
       process.exit(0);
     } catch (err) {
-      console.error("error:", err?.message || err);
+      console.error('error:', err?.message || err);
+      process.exit(1);
+    }
+  }
+
+  if (command === '--json' || command === '-j' || command === 'json') {
+    try {
+      const result = await scan();
+      console.log(JSON.stringify(result, null, 2));
+      process.exit(0);
+    } catch (err) {
+      console.error('error:', err?.message || err);
       process.exit(1);
     }
   }
