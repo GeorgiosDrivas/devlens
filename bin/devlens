@@ -576,7 +576,7 @@ async function scan() {
     path.join(root, "src", "pages"),
   ]);
 
-  const framework = detectFramework(packageJson, !!appDir, !!pagesDir);
+  const framework = await detectFramework(packageJson, !!appDir, !!pagesDir);
   const { routes, apiRoutes } = await scanRoutes(appDir, pagesDir);
   const env = await scanEnv();
 
