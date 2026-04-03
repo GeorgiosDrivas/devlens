@@ -536,16 +536,6 @@ async function ensureDevLensDir() {
   return target;
 }
 
-async function runInit() {
-  const result = await scan();
-  await ensureDevLensDir();
-
-  const outputFile = path.join(root, ".devlens", "devlens.json");
-  await fsp.writeFile(outputFile, JSON.stringify(result, null, 2), "utf8");
-
-  console.log(`Written ${outputFile}`);
-}
-
 function printHelp() {
   console.log("Usage: devlens [command] [--json]\n");
   console.log("Commands:");
