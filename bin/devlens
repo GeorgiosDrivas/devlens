@@ -252,7 +252,6 @@ async function scan() {
     }
   }
 
-  // env scanning
   const envFiles = [];
   const dotCandidates = [
     ".env",
@@ -306,11 +305,6 @@ async function scan() {
     if (declaredEnv[name]) {
       usedEnv.push({ name, files: Array.from(files).sort() });
       usedNames.add(name);
-    }
-  }
-  for (const name of Object.keys(declaredEnv)) {
-    if (referencedEnv[name] && !usedNames.has(name)) {
-      // if referenced and declared, it's used, already in usedEnv on above
     }
   }
 
