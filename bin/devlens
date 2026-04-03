@@ -260,11 +260,7 @@ function getApiRouteFromAppFile(appRoot, file) {
     return null;
   }
 
-  const routeBase = noExt
-    .replace(/^api/, "")
-    .replace(/\/route$/, "")
-    .replace(/^$/, "");
-
+  const routeBase = noExt.replace(/^api/, "").replace(/\/route$/, "");
   const route = `/api${routeBase}`;
 
   return route.replace(/\/+/g, "/");
@@ -509,6 +505,9 @@ async function scan() {
   const env = await scanEnv();
 
   const result = {
+    tool: "devlens",
+    schemaVersion: 1,
+    generatedAt: new Date().toISOString(),
     project: {
       name: projectName,
       root: ".",
@@ -548,35 +547,41 @@ async function runInit() {
 }
 
 function printHelp() {
-  console.log("Run `devlens init` to generate .devlens/devlens.json");
+  console.log("Usage: devlens [command] [--json]\n");
+  console.log("Commands:");
+  console.log("  init     Generate .devlens/devlens.json");
+  console.log("\nFlags:");
+  console.log("  --json   Print JSON to stdout");
+  console.log('\nIf no command is provided, "init" is used by default.');
 }
 
 async function main() {
   const args = process.argv.slice(2);
-  const command = args[0];
+  const wantsJson = args.includes("--json");
+  const command = args.find((arg) => !arg.startsWith("-"));
 
-  if (command === "help" || command === "--help" || command === "-h") {
-    console.log("Usage: devlens [command]\n");
-    console.log("Commands:");
-    console.log("  init     Generate .devlens/devlens.json");
-    console.log('\nIf no command is provided, "init" is used by default.');
+  if (args.includes("help") || args.includes("--help") || args.includes("-h")) {
+    printHelp();
     process.exit(0);
   }
 
   if (!command || command === "init") {
     try {
-      await runInit();
-      process.exit(0);
-    } catch (err) {
-      console.error("error:", err?.message || err);
-      process.exit(1);
-    }
-  }
-
-  if (command === "--json" || command === "-j" || command === "json") {
-    try {
       const result = await scan();
-      console.log(JSON.stringify(result, null, 2));
+
+      if (wantsJson) {
+        console.log(JSON.stringify(result, null, 2));
+      } else {
+        await ensureDevLensDir();
+        const outputFile = path.join(root, ".devlens", "devlens.json");
+        await fsp.writeFile(
+          outputFile,
+          JSON.stringify(result, null, 2),
+          "utf8",
+        );
+        console.log(`Written ${outputFile}`);
+      }
+
       process.exit(0);
     } catch (err) {
       console.error("error:", err?.message || err);
