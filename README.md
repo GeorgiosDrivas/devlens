@@ -33,4 +33,4 @@ devlens
 Local:
 
 npm install @georgios-drivas/devlens
-npx devlens
+npx @georgios-drivas/devlens
