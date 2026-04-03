@@ -6,11 +6,7 @@ CLI tool that scans your project and generates metadata (routes, API endpoints, 
 
 Run in your project root:
 
-npx devlens
-
-or
-
-npx devlens@latest
+npx @georgios-drivas/devlens
 
 ## Output
 
@@ -31,18 +27,10 @@ Generates:
 
 Global:
 
-npm install -g devlens
+npm install -g @georgios-drivas/devlens
 devlens
 
 Local:
 
-npm install devlens
+npm install @georgios-drivas/devlens
 npx devlens
-
-## Requirements
-
-Node.js >= 18
-
-## License
-
-MIT
