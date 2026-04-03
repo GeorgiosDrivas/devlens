@@ -452,6 +452,84 @@ async function scanEnv() {
   };
 }
 
+function hasEnvData(env) {
+  return env.used.length > 0 || env.unused.length > 0 || env.missing.length > 0;
+}
+
+async function scanEnv() {
+  const dotCandidates = [
+    ".env",
+    ".env.local",
+    ".env.development",
+    ".env.production",
+    ".env.test",
+  ];
+
+  const envFiles = [];
+  for (const envFile of dotCandidates) {
+    const full = path.join(root, envFile);
+    if (await pathExists(full)) {
+      envFiles.push(full);
+    }
+  }
+
+  const declaredEnv = await collectEnvFromDotFiles(envFiles);
+
+  const allSourceFiles = await walk(root, (file) => {
+    const ext = path.extname(file).toLowerCase();
+    return SOURCE_EXTS.has(ext);
+  });
+
+  const referencedEnv = {};
+
+  for (const file of allSourceFiles) {
+    const text = await fsp.readFile(file, "utf8");
+    const keys = findEnvReferencesInText(text);
+
+    for (const key of keys) {
+      if (!referencedEnv[key]) {
+        referencedEnv[key] = new Set();
+      }
+      referencedEnv[key].add(toRelative(file));
+    }
+  }
+
+  const used = [];
+  const unused = [];
+  const missing = [];
+
+  for (const [name, files] of Object.entries(referencedEnv)) {
+    if (declaredEnv[name]) {
+      used.push({
+        name,
+        files: Array.from(files).sort(),
+      });
+    } else {
+      missing.push({
+        name,
+        referencedIn: Array.from(files).sort(),
+      });
+    }
+  }
+
+  for (const [name, filePaths] of Object.entries(declaredEnv)) {
+    if (!referencedEnv[name]) {
+      unused.push({
+        name,
+        declaredIn: Array.from(new Set(filePaths)).sort(),
+      });
+    }
+  }
+
+  const env = {
+    used: used.sort((a, b) => a.name.localeCompare(b.name)),
+    unused: unused.sort((a, b) => a.name.localeCompare(b.name)),
+    missing: missing.sort((a, b) => a.name.localeCompare(b.name)),
+  };
+
+  return hasEnvData(env) ? env : null;
+}
+
 async function scan() {
   const packageJson = (await readJson(path.join(root, "package.json"))) || {};
   const projectName = packageJson.name || path.basename(root) || "my-app";
@@ -470,7 +548,7 @@ async function scan() {
   const { routes, apiRoutes } = await scanRoutes(appDir, pagesDir);
   const env = await scanEnv();
 
-  return {
+  const result = {
     project: {
       name: projectName,
       root: ".",
@@ -478,8 +556,13 @@ async function scan() {
     },
     routes,
     apiRoutes,
-    env,
   };
+
+  if (env) {
+    result.env = env;
+  }
+
+  return result;
 }
 
 async function ensureDevLensDir() {
