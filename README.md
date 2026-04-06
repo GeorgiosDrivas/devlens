@@ -45,7 +45,7 @@ npx @georgios-drivas/devlens
 Run devlens in your project root:
 
 ```bash
-devlens
+@georgios-drivas/devlens
 ```
 
 ### Flags
