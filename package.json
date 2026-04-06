@@ -1,7 +1,7 @@
 {
   "name": "@georgios-drivas/devlens",
-  "version": "0.2.0",
-  "description": "CLI that scans a project and generates JSON metadata for routes, API endpoints, and environment variables.",
+  "version": "0.3.0",
+  "description": "CLI that generates an agent-friendly JSON manifest of your project’s structure, entrypoints, stack, and environment.",
   "bin": {
     "devlens": "bin/devlens"
   },
