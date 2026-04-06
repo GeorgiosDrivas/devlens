@@ -24,14 +24,14 @@
 
 ```bash
 npm install -g @georgios-drivas/devlens
-devlens
+@georgios-drivas/devlens
 ```
 
 ### Local (per project)
 
 ```bash
 npm install --save-dev @georgios-drivas/devlens
-npx devlens
+npx @georgios-drivas/devlens
 ```
 
 ### Via npx (no installation)
