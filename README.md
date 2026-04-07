@@ -14,10 +14,6 @@
 - **Config File Scanning** - Detects all major config files (tsconfig, vite, webpack, etc.)
 - **Script Detection** - Extracts npm scripts with intelligent ordering
 
-## Requirements
-
-- Node.js >=18
-
 ## Installation
 
 ### Global (CLI anywhere)
@@ -65,9 +61,6 @@ devlens --json
 
 # Save to custom file
 devlens --out metadata.json
-
-# Pipe output to jq for processing
-devlens --json | jq '.framework'
 ```
 
 ## Output Structure
@@ -154,13 +147,6 @@ The generated manifest includes:
 }
 ```
 
-Supports:
-
-- **next-api** - Next.js API routes (app directory)
-- **express** - Express.js routes
-- **client-only** - No server routes detected
-- **unknown** - Unable to determine
-
 ### Environment Variables
 
 ```json
@@ -222,17 +208,6 @@ Supports:
 - **Next.js** - Full detection with app/pages directory support
 - **React** - Detection with Vite, Create React App, or custom setups
 - **Other frameworks** - Basic detection with unknown confidence
-
-## What Gets Scanned
-
-devlens analyzes:
-
-- `package.json` - Dependencies, scripts, project metadata
-- Framework directories - `app/`, `pages/`, `src/`, etc.
-- API files - Route handlers and API definitions
-- Configuration files - TypeScript, build tools, linters, etc.
-- Environment files - `.env*` files in project root
-- Source code - JavaScript/TypeScript files for environment variable usage
 
 ### Ignored Directories
 
