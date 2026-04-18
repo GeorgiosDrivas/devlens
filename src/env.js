@@ -126,13 +126,25 @@ async function scanEnv(IGNORED_DIRS, IGNORED_PATH_SEGMENTS) {
     }
   }
 
+  const declared = Object.keys(declaredEnv).sort();
+
   const env = {
     used: used.sort((a, b) => a.name.localeCompare(b.name)),
+    declared,
     unused: unused.sort((a, b) => a.name.localeCompare(b.name)),
     missing: missing.sort((a, b) => a.name.localeCompare(b.name)),
   };
 
   return hasEnvData(env) ? env : null;
+}
+
+function hasEnvData(env) {
+  return (
+    env.used.length > 0 ||
+    env.declared.length > 0 ||
+    env.unused.length > 0 ||
+    env.missing.length > 0
+  );
 }
 
 module.exports = {

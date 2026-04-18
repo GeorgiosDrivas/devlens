@@ -1,4 +1,3 @@
-const JS_EXTS = new Set([".js", ".jsx", ".ts", ".tsx", ".mjs", ".cjs"]);
 const SOURCE_EXTS = new Set([
   ".js",
   ".jsx",
@@ -46,6 +45,8 @@ const CONFIG_FILE_CANDIDATES = [
   "webpack.config.ts",
   "rollup.config.js",
   "rollup.config.ts",
+  "esbuild.config.js",
+  "esbuild.config.ts",
   "eslint.config.js",
   "eslint.config.mjs",
   ".eslintrc",
@@ -70,13 +71,9 @@ const CONFIG_FILE_CANDIDATES = [
   "playwright.config.ts",
   "cypress.config.ts",
   "prisma/schema.prisma",
-  "docker-compose.yml",
-  "docker-compose.yaml",
-  "Dockerfile",
 ];
 
 module.exports = {
-  JS_EXTS,
   SOURCE_EXTS,
   IGNORED_DIRS,
   IGNORED_PATH_SEGMENTS,
