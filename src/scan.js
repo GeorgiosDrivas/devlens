@@ -301,9 +301,6 @@ async function scan() {
   };
 
   return {
-    tool: "devlens",
-    schemaVersion: 3,
-    generatedAt: new Date().toISOString(),
     project: {
       name: projectName,
     },
