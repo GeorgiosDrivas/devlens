@@ -31,21 +31,12 @@ Commit `project-structure.json` alongside your code, or generate it on-the-fly a
 
 ```json
 {
-  "tool": "devlens",
-  "schemaVersion": 3,
-  "generatedAt": "2026-04-18T10:00:00.000Z",
   "project": {
-    "name": "my-app",
-    "root": "."
+    "name": "my-app"
   },
   "runtime": {
     "packageManager": "pnpm",
-    "moduleSystem": "esm",
-    "languageHints": ["typescript"],
-    "workspace": false
-  },
-  "filesystem": {
-    "topLevelDirectories": ["public", "scripts", "src"]
+    "languageHints": ["typescript"]
   },
   "dependencies": {
     "production": ["express", "react"],
@@ -62,7 +53,6 @@ Commit `project-structure.json` alongside your code, or generate it on-the-fly a
     "test": "vitest"
   },
   "config": {
-    "files": ["package.json", "tsconfig.json", "vite.config.ts"],
     "tools": ["eslint", "typescript", "vite", "vitest"]
   },
   "environment": {
@@ -82,9 +72,7 @@ Commit `project-structure.json` alongside your code, or generate it on-the-fly a
 
 ## What each field tells an agent
 
-**`runtime`** — How to install dependencies and run the project. `languageHints` signals whether to expect `.ts` files and type errors. `workspace` flags a monorepo root.
-
-**`filesystem.topLevelDirectories`** — A quick orientation of the repo layout without listing every file.
+**`runtime`** — How to install dependencies and run the project. `languageHints` signals whether to expect `.ts` files and type errors.
 
 **`dependencies.categories`** — Pre-bucketed into `ui`, `server`, and `testing` so an agent can reason about the stack without parsing all deps itself.
 
