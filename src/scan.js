@@ -321,7 +321,6 @@ async function scan() {
     generatedAt: new Date().toISOString(),
     project: {
       name: projectName,
-      root: ".",
     },
     runtime,
     filesystem: {
