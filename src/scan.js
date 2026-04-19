@@ -85,29 +85,6 @@ async function detectLanguageHints(packageJson) {
   return ["javascript"];
 }
 
-async function collectFilesystem() {
-  const entries = await fsp.readdir(root, { withFileTypes: true });
-  const topLevelDirectories = [];
-  const topLevelFiles = [];
-
-  for (const entry of entries) {
-    if (entry.name.startsWith(".")) continue;
-
-    if (entry.isDirectory()) {
-      if (IGNORED_DIRS.has(entry.name)) continue;
-      topLevelDirectories.push(entry.name);
-      continue;
-    }
-
-    topLevelFiles.push(entry.name);
-  }
-
-  return {
-    topLevelDirectories: uniqueSorted(topLevelDirectories),
-    _topLevelFiles: uniqueSorted(topLevelFiles),
-  };
-}
-
 function buildDependencyCategories(packageJson) {
   const categories = {
     ui: [],
@@ -307,9 +284,18 @@ async function scan() {
     missing: [],
     unused: [],
   };
-  const filesystem = await collectFilesystem();
+
+  const rootEntries = await fsp.readdir(root, { withFileTypes: true });
+  const rootFiles = [];
+
+  for (const entry of rootEntries) {
+    if (entry.name.startsWith(".")) continue;
+    if (entry.isDirectory()) continue;
+    rootFiles.push(entry.name);
+  }
+
   const runtime = {
-    packageManager: getPackageManager(packageJson, filesystem._topLevelFiles),
+    packageManager: getPackageManager(packageJson, rootFiles),
     moduleSystem: getModuleSystem(packageJson),
     languageHints: await detectLanguageHints(packageJson),
   };
@@ -322,9 +308,6 @@ async function scan() {
       name: projectName,
     },
     runtime,
-    filesystem: {
-      topLevelDirectories: filesystem.topLevelDirectories,
-    },
     dependencies: {
       production: uniqueSorted(Object.keys(packageJson.dependencies || {})),
       development: uniqueSorted(Object.keys(packageJson.devDependencies || {})),
