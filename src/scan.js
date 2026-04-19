@@ -296,7 +296,6 @@ async function scan() {
 
   const runtime = {
     packageManager: getPackageManager(packageJson, rootFiles),
-    moduleSystem: getModuleSystem(packageJson),
     languageHints: await detectLanguageHints(packageJson),
   };
 
