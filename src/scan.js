@@ -85,6 +85,47 @@ async function detectLanguageHints(packageJson) {
   return ["javascript"];
 }
 
+function isCodeFile(file) {
+  return [".js", ".jsx", ".ts", ".tsx", ".mjs", ".cjs"].includes(
+    path.extname(file).toLowerCase(),
+  );
+}
+
+function isTestFile(file) {
+  const normalized = file.replace(/\\/g, "/");
+  const basename = path.basename(file).toLowerCase();
+  return (
+    /(^|\/)(__tests__|tests|test)(\/|$)/.test(normalized) ||
+    /\.(test|spec)\.(js|jsx|ts|tsx|mjs|cjs)$/.test(basename)
+  );
+}
+
+async function countLines(filePath) {
+  const contents = await fsp.readFile(filePath, "utf8");
+  return contents.split("\n").length;
+}
+
+async function collectCodebaseMetrics() {
+  const codeFiles = await walk(
+    root,
+    IGNORED_DIRS,
+    IGNORED_PATH_SEGMENTS,
+    isCodeFile,
+  );
+  const testFiles = codeFiles.filter(isTestFile);
+  let linesOfCode = 0;
+
+  for (const file of codeFiles) {
+    linesOfCode += await countLines(file);
+  }
+
+  return {
+    sourceFiles: codeFiles.length - testFiles.length,
+    testFiles: testFiles.length,
+    linesOfCode,
+  };
+}
+
 function buildDependencyCategories(packageJson) {
   const categories = {
     ui: [],
@@ -299,11 +340,14 @@ async function scan() {
     languageHints: await detectLanguageHints(packageJson),
   };
 
+  const codebase = await collectCodebaseMetrics();
+
   return {
     project: {
       name: projectName,
     },
     runtime,
+    codebase,
     dependencies: {
       production: uniqueSorted(Object.keys(packageJson.dependencies || {})),
       development: uniqueSorted(Object.keys(packageJson.devDependencies || {})),

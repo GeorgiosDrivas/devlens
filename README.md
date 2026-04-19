@@ -55,6 +55,11 @@ Commit `project-structure.json` alongside your code, or generate it on-the-fly a
   "config": {
     "tools": ["eslint", "typescript", "vite", "vitest"]
   },
+  "codebase": {
+    "sourceFiles": 42,
+    "testFiles": 8,
+    "linesOfCode": 3800
+  },
   "environment": {
     "declared": ["DATABASE_URL", "STRIPE_KEY"],
     "used": [{ "name": "DATABASE_URL", "files": ["src/lib/db.ts"] }],
@@ -77,6 +82,8 @@ Commit `project-structure.json` alongside your code, or generate it on-the-fly a
 **`dependencies.categories`** — Pre-bucketed into `ui`, `server`, and `testing` so an agent can reason about the stack without parsing all deps itself.
 
 **`config.tools`** — The active toolchain: typescript, vite, vitest, eslint, prettier. Tells an agent which configs exist and what commands are valid.
+
+**`codebase`** — High-level repository metrics: source file count, test file count, and total lines of code. This helps an agent estimate project size and complexity at a glance.
 
 **`environment`** — The most immediately actionable section. `missing` lists every env var referenced in code but absent from any `.env` file — a common source of runtime failures an agent should flag or fix before doing anything else. `unused` surfaces declared vars that are never read.
 
