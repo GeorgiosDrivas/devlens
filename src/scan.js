@@ -312,7 +312,6 @@ async function scan() {
     packageManager: getPackageManager(packageJson, filesystem._topLevelFiles),
     moduleSystem: getModuleSystem(packageJson),
     languageHints: await detectLanguageHints(packageJson),
-    workspace: isWorkspacePackage(packageJson),
   };
 
   return {
