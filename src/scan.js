@@ -311,7 +311,6 @@ async function scan() {
     },
     scripts,
     config: {
-      files: configFiles || [],
       tools: detectConfigTools(configFiles || [], packageJson),
     },
     environment: {
