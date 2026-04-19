@@ -336,8 +336,8 @@ async function scan() {
       tools: detectConfigTools(configFiles || [], packageJson),
     },
     environment: {
-      used: env.used,
       declared: env.declared || [],
+      used: env.used,
       missing: env.missing,
       unused: env.unused,
     },
