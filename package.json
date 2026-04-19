@@ -1,6 +1,6 @@
 {
   "name": "@georgios-drivas/devlens",
-  "version": "1.0.2",
+  "version": "1.1.0",
   "description": "CLI tool that scans your project and generates an agent-friendly JSON manifest of your structure, entrypoints, stack, and environment.",
   "bin": {
     "devlens": "bin/devlens"
