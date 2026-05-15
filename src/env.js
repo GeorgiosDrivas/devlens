@@ -49,10 +49,6 @@ function findEnvReferencesInText(text) {
   return Array.from(used);
 }
 
-function hasEnvData(env) {
-  return env.used.length > 0 || env.unused.length > 0 || env.missing.length > 0;
-}
-
 async function scanEnv(IGNORED_DIRS, IGNORED_PATH_SEGMENTS) {
   const dotCandidates = [
     ".env",
