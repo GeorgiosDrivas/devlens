@@ -38,6 +38,12 @@ Commit `project-structure.json` alongside your code, or generate it on-the-fly a
     "packageManager": "pnpm",
     "languageHints": ["typescript"]
   },
+  "entrypoints": {
+    "bin": { "my-app": "bin/cli.js" },
+    "main": "dist/index.js",
+    "module": "dist/index.mjs",
+    "types": "dist/index.d.ts"
+  },
   "dependencies": {
     "production": ["express", "react"],
     "development": ["eslint", "typescript", "vitest"],
@@ -78,6 +84,8 @@ Commit `project-structure.json` alongside your code, or generate it on-the-fly a
 ## What each field tells an agent
 
 **`runtime`** — How to install dependencies and run the project. `languageHints` signals whether to expect `.ts` files and type errors.
+
+**`entrypoints`** — Where execution starts, resolved from `package.json` fields: `bin` (CLI executables, normalized to a name→path map), `main` (CommonJS entry), `module` (ESM entry), and `types` (TypeScript declarations). Each field is `null` when not declared.
 
 **`dependencies.categories`** — Pre-bucketed into `ui`, `server`, and `testing` so an agent can reason about the stack without parsing all deps itself.
 

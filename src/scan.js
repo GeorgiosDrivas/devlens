@@ -38,6 +38,25 @@ function getModuleSystem(packageJson) {
   return packageJson?.type === "module" ? "esm" : "commonjs";
 }
 
+function getEntrypoints(packageJson, projectName) {
+  const bin = packageJson?.bin;
+  let normalizedBin = null;
+
+  if (typeof bin === "string") {
+    const name = projectName.replace(/^@[^/]+\//, "");
+    normalizedBin = { [name]: bin };
+  } else if (bin && typeof bin === "object") {
+    normalizedBin = bin;
+  }
+
+  return {
+    bin: normalizedBin,
+    main: packageJson?.main || null,
+    module: packageJson?.module || null,
+    types: packageJson?.types || packageJson?.typings || null,
+  };
+}
+
 function isWorkspacePackage(packageJson) {
   return Boolean(
     packageJson?.workspaces ||
@@ -347,6 +366,7 @@ async function scan() {
       name: projectName,
     },
     runtime,
+    entrypoints: getEntrypoints(packageJson, projectName),
     codebase,
     dependencies: {
       production: uniqueSorted(Object.keys(packageJson.dependencies || {})),
