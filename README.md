@@ -22,10 +22,27 @@ Run in your project root:
 devlens                        # writes project-structure.json
 devlens --json                 # prints to stdout
 devlens --out context.json     # custom output path
+devlens push                   # embed the manifest into your agent file
+devlens push --target FILE.md  # embed into a specific file
 devlens --help
 ```
 
 Commit `project-structure.json` alongside your code, or generate it on-the-fly and pipe it into your agent's context. Either works.
+
+## `devlens push`
+
+`devlens push` embeds the manifest directly into your agent instructions file so it loads into context automatically — no separate file to wire up.
+
+It looks for `CLAUDE.md`, `AGENTS.md`, `GEMINI.md`, `.cursorrules`, `.github/copilot-instructions.md`, and `.windsurfrules`, and injects the JSON into every one it finds, wrapped in marker comments:
+
+```markdown
+<!-- devlens:start -->
+## Project structure
+...manifest as JSON...
+<!-- devlens:end -->
+```
+
+Re-running `push` replaces the block in place — it never duplicates. If no agent file exists, `push` exits with an error rather than guessing; create one first, or point it at a file explicitly with `--target`.
 
 ## Output
 
