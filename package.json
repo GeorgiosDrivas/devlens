@@ -16,10 +16,6 @@
   ],
   "keywords": [
     "cli",
-    "nextjs",
-    "react",
-    "routes",
-    "api",
     "environment-variables",
     "agents",
     "project-scanner",

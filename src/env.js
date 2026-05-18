@@ -131,21 +131,11 @@ async function scanEnv(IGNORED_DIRS, IGNORED_PATH_SEGMENTS) {
     missing: missing.sort((a, b) => a.name.localeCompare(b.name)),
   };
 
-  return hasEnvData(env) ? env : null;
-}
-
-function hasEnvData(env) {
-  return (
-    env.used.length > 0 ||
-    env.declared.length > 0 ||
-    env.unused.length > 0 ||
-    env.missing.length > 0
-  );
+  return env;
 }
 
 module.exports = {
   scanEnv,
   collectEnvFromDotFiles,
   findEnvReferencesInText,
-  hasEnvData,
 };
