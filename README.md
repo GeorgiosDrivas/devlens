@@ -7,10 +7,10 @@ When you drop an agent into an unfamiliar codebase, it wastes context figuring o
 ## Installation
 
 ```bash
-# No install needed
+# Install local
 npx @georgios-drivas/devlens
 
-# Or globally
+# Install globally
 npm install -g @georgios-drivas/devlens
 ```
 
@@ -19,13 +19,15 @@ npm install -g @georgios-drivas/devlens
 Run in your project root:
 
 ```bash
-devlens                        # writes project-structure.json
-devlens --json                 # prints to stdout
-devlens --out context.json     # custom output path
-devlens push                   # embed the manifest into your agent file
-devlens push --target FILE.md  # embed into a specific file
-devlens --help
+npx @georgios-drivas/devlens  # writes project-structure.json
+npx @georgios-drivas/devlens --json  # prints to stdout
+npx @georgios-drivas/devlens --out context.json  # custom output path
+npx @georgios-drivas/devlens push  # embed the manifest into your agent file
+npx @georgios-drivas/devlens push --target FILE.md  # embed into a specific file
+npx @georgios-drivas/devlens --help
 ```
+
+_If installed globally with `npm install -g @georgios-drivas/devlens`, you can omit the `npx @georgios-drivas/` prefix and run `devlens` directly._
 
 Commit `project-structure.json` alongside your code, or generate it on-the-fly and pipe it into your agent's context. Either works.
 
@@ -37,8 +39,11 @@ It looks for `CLAUDE.md`, `AGENTS.md`, `GEMINI.md`, `.cursorrules`, `.github/cop
 
 ```markdown
 <!-- devlens:start -->
+
 ## Project structure
+
 ...manifest as JSON...
+
 <!-- devlens:end -->
 ```
 
