@@ -35,11 +35,12 @@ async function runPush(args) {
 
 const COMMANDS = {
   init: {
-    summary: "Generate project-structure.json (default)",
+    summary: "Generate the project manifest JSON (default)",
     run: runInit,
   },
   push: {
-    summary: "Embed the manifest into an agent file (CLAUDE.md, AGENTS.md, ...)",
+    summary:
+      "Embed the manifest into an agent file (CLAUDE.md, AGENTS.md, ...)",
     run: runPush,
   },
 };
@@ -53,8 +54,8 @@ function printHelp() {
     console.log(`  ${name.padEnd(8)} ${command.summary}`);
   }
   console.log("\nFlags:");
-  console.log("  --json          Print JSON to stdout (init only)");
-  console.log("  --out <file>    Write manifest to a custom file path (init only)");
+  console.log("  --json          Print JSON to stdout");
+  console.log("  --out <file>    Write manifest to a custom file path");
   console.log("  --target <file> Agent file to push into (push only)");
   console.log("  --help, -h      Show help");
   console.log(`\nIf no command is provided, "${DEFAULT_COMMAND}" is used.`);
@@ -68,15 +69,19 @@ async function main() {
     process.exit(0);
   }
 
-  const commandName =
-    args.find((arg) => !arg.startsWith("-")) || DEFAULT_COMMAND;
-  const command = COMMANDS[commandName];
-
-  if (!command) {
-    console.error(`Unknown command: ${commandName}`);
-    console.error(`Available commands: ${Object.keys(COMMANDS).join(", ")}`);
-    process.exit(1);
+  let commandName = DEFAULT_COMMAND;
+  const firstArg = args[0];
+  if (firstArg && !firstArg.startsWith("-")) {
+    if (COMMANDS[firstArg]) {
+      commandName = firstArg;
+    } else {
+      console.error(`Unknown command: ${firstArg}`);
+      console.error(`Available commands: ${Object.keys(COMMANDS).join(", ")}`);
+      process.exit(1);
+    }
   }
+
+  const command = COMMANDS[commandName];
 
   try {
     await command.run(args);
