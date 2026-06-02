@@ -31,6 +31,14 @@ _If installed globally with `npm install -g @georgios-drivas/devlens`, you can o
 
 Commit `project-structure.json` alongside your code, or generate it on-the-fly and pipe it into your agent's context. Either works.
 
+## What devlens scans
+
+**Git information** — Captures the current branch, remote URL, and last commit to give agents context about the repository state and version history.
+
+**Environment variables** — Scans code for environment variable references and cross-references them with `.env` files to flag missing or unused configuration.
+
+**Project metadata** — Collects package manager, language hints (TypeScript/JavaScript), entry points, dependencies, scripts, and codebase metrics — everything needed for agents to understand your project without manual exploration.
+
 ## `devlens push`
 
 `devlens push` embeds the manifest directly into your agent instructions file so it loads into context automatically — no separate file to wire up.
@@ -55,6 +63,11 @@ Re-running `push` replaces the block in place — it never duplicates. If no age
 {
   "project": {
     "name": "my-app"
+  },
+  "git": {
+    "Branch": "main",
+    "remoteUrl": "https://github.com/user/my-app.git",
+    "lastCommit": "a1b2c3d - feat: add new feature"
   },
   "runtime": {
     "packageManager": "pnpm",
@@ -104,6 +117,8 @@ Re-running `push` replaces the block in place — it never duplicates. If no age
 ```
 
 ## What each field tells an agent
+
+**`git`** — Current repository state including branch name, remote URL, and the latest commit hash and message. Agents use this to understand version control context and avoid breaking changes.
 
 **`runtime`** — How to install dependencies and run the project. `languageHints` signals whether to expect `.ts` files and type errors.
 
