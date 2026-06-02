@@ -2,19 +2,17 @@ const childProcess = require("child_process");
 
 const runGit = (args, options = {}) => {
   const { cwd = process.cwd() } = options;
-  childProcess.execSync(
-    `git ${args}`,
-    {
+  try {
+    const output = childProcess.execSync(`git ${args}`, {
       cwd,
-      stdio: "inherit",
+      stdio: "pipe",
       windowsHide: true,
-    },
-    (err) => {
-      if (err) {
-        throw new Error(`Git command failed: git ${args}`);
-      }
-    },
-  );
+      encoding: "utf8",
+    });
+    return output.trim();
+  } catch (err) {
+    throw new Error(`Git command failed: git ${args}`);
+  }
 };
 
 const gitBranch = () => {
@@ -26,7 +24,7 @@ const gitRemote = () => {
 };
 
 const gitLastCommit = () => {
-  return runGit("log -1 --pretty=format:'%h - %s' ");
+  return runGit("log -1 --pretty=format:'%h - %s'");
 };
 
 const git = () => {
