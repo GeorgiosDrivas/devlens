@@ -10,7 +10,7 @@ const runGit = (args, options = {}) => {
       encoding: "utf8",
     });
     return output.trim();
-  } catch (err) {
+  } catch {
     throw new Error(`Git command failed: git ${args}`);
   }
 };
