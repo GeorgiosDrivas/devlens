@@ -38,9 +38,6 @@
   "author": "Georgios Drivas",
   "license": "MIT",
   "type": "commonjs",
-  "dependencies": {
-    "@georgios-drivas/devlens": "^1.3.0"
-  },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
     "@types/node": "^25.9.1",
