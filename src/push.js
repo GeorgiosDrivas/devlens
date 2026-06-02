@@ -73,14 +73,7 @@ async function push(manifest, targetArg) {
   for (const rel of targets) {
     const full = path.resolve(root, rel);
 
-    let existing = "";
-    try {
-      existing = await fsp.readFile(full, "utf8");
-    } catch {
-      existing = "";
-    }
-
-    const next = injectBlock(existing, block);
+    const next = injectBlock(await fsp.readFile(full, "utf8"), block);
     await fsp.mkdir(path.dirname(full), { recursive: true });
     await fsp.writeFile(full, next, "utf8");
     written.push(rel);

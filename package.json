@@ -7,7 +7,9 @@
   },
   "scripts": {
     "start": "node bin/devlens",
-    "test": "node --test"
+    "test": "node --test",
+    "format": "npx prettier --write .",
+    "lint": "npx eslint . "
   },
   "files": [
     "bin",
@@ -40,6 +42,11 @@
     "@georgios-drivas/devlens": "^1.2.1"
   },
   "devDependencies": {
-    "@types/node": "^25.9.1"
+    "@eslint/js": "^10.0.1",
+    "@types/node": "^25.9.1",
+    "eslint": "^10.4.1",
+    "eslint-config-prettier": "^10.1.8",
+    "globals": "^17.6.0",
+    "prettier": "^3.8.3"
   }
 }

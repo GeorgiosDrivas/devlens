@@ -1,0 +1,9 @@
+# Ignore artifacts:
+build
+coverage
+README.md
+.prettierrc
+.github/workflows/
+eslint.config.mjs
+package-lock.json
+package.json

@@ -34,10 +34,6 @@ function getPackageManager(packageJson, rootFiles) {
   return "npm";
 }
 
-function getModuleSystem(packageJson) {
-  return packageJson?.type === "module" ? "esm" : "commonjs";
-}
-
 function getEntrypoints(packageJson, projectName) {
   const bin = packageJson?.bin;
   let normalizedBin = null;
@@ -55,14 +51,6 @@ function getEntrypoints(packageJson, projectName) {
     module: packageJson?.module || null,
     types: packageJson?.types || packageJson?.typings || null,
   };
-}
-
-function isWorkspacePackage(packageJson) {
-  return Boolean(
-    packageJson?.workspaces ||
-    (packageJson?.packageManager &&
-      packageJson.packageManager.includes("workspaces")),
-  );
 }
 
 async function detectLanguageHints(packageJson) {
