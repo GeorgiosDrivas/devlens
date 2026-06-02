@@ -11,6 +11,7 @@ const {
   findFirstExistingPath,
   hasAnyDependency,
 } = require("./utils");
+const git = require("./git");
 const { IGNORED_DIRS, IGNORED_PATH_SEGMENTS } = require("./constants");
 
 async function readJson(filePath) {
@@ -353,6 +354,7 @@ async function scan() {
     project: {
       name: projectName,
     },
+    git,
     runtime,
     entrypoints: getEntrypoints(packageJson, projectName),
     codebase,
