@@ -1,7 +1,6 @@
 const path = require("path");
 const { collectConfigFiles } = require("./configs");
 const { pickScripts } = require("./scripts");
-const { scanEnv } = require("./env");
 const {
   fsp,
   root,
@@ -327,12 +326,6 @@ async function scan() {
 
   const configFiles = await collectConfigFiles();
   const scripts = pickScripts(packageJson) || {};
-  const env = (await scanEnv(IGNORED_DIRS, IGNORED_PATH_SEGMENTS)) || {
-    used: [],
-    declared: [],
-    missing: [],
-    unused: [],
-  };
 
   const rootEntries = await fsp.readdir(root, { withFileTypes: true });
   const rootFiles = [];
@@ -366,12 +359,6 @@ async function scan() {
     scripts,
     config: {
       tools: detectConfigTools(configFiles || [], packageJson),
-    },
-    environment: {
-      declared: env.declared || [],
-      used: env.used,
-      missing: env.missing,
-      unused: env.unused,
     },
     source: {
       hasDocker: await hasDockerConfig(),

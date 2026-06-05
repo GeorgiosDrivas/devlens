@@ -2,7 +2,7 @@
 
 > Generate a single JSON file that gives any AI agent an accurate picture of your project.
 
-When you drop an agent into an unfamiliar codebase, it wastes context figuring out the basics — what package manager is in use, where the entry files are, which env vars are missing, what tools are configured. **devlens** scans your project once and produces a concise, structured manifest so agents can skip that discovery phase entirely.
+When you drop an agent into an unfamiliar codebase, it wastes context figuring out the basics — what package manager is in use, where the entry files are, what tools are configured. **devlens** scans your project once and produces a concise, structured manifest so agents can skip that discovery phase entirely.
 
 ## Installation
 
@@ -34,8 +34,6 @@ Commit `project-structure.json` alongside your code, or generate it on-the-fly a
 ## What devlens scans
 
 **Git information** — Captures the current branch, remote URL, and last commit to give agents context about the repository state and version history.
-
-**Environment variables** — Scans code for environment variable references and cross-references them with `.env` files to flag missing or unused configuration.
 
 **Project metadata** — Collects package manager, language hints (TypeScript/JavaScript), entry points, dependencies, scripts, and codebase metrics — everything needed for agents to understand your project without manual exploration.
 
@@ -101,12 +99,6 @@ Re-running `push` replaces the block in place — it never duplicates. If no age
     "testFiles": 8,
     "linesOfCode": 3800
   },
-  "environment": {
-    "declared": ["DATABASE_URL", "STRIPE_KEY"],
-    "used": [{ "name": "DATABASE_URL", "files": ["src/lib/db.ts"] }],
-    "unused": [{ "name": "STRIPE_KEY", "declaredIn": [".env"] }],
-    "missing": [{ "name": "REDIS_URL", "referencedIn": ["src/cache.ts"] }]
-  },
   "source": {
     "hasDocker": true,
     "hasCLI": false,
@@ -129,8 +121,6 @@ Re-running `push` replaces the block in place — it never duplicates. If no age
 **`config.tools`** — The active toolchain: typescript, vite, vitest, eslint, prettier. Tells an agent which configs exist and what commands are valid.
 
 **`codebase`** — High-level repository metrics: source file count, test file count, and total lines of code. This helps an agent estimate project size and complexity at a glance.
-
-**`environment`** — The most immediately actionable section. `missing` lists every env var referenced in code but absent from any `.env` file — a common source of runtime failures an agent should flag or fix before doing anything else. `unused` surfaces declared vars that are never read.
 
 **`source`** — Four booleans that answer common agent questions up front: is there a containerization setup, a CLI entry, a test suite, a CI pipeline?
 
