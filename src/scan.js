@@ -51,11 +51,20 @@ async function scan() {
 
   const codebase = await collectCodebaseMetrics();
 
+  let gitInfo = null;
+  try {
+    gitInfo = git();
+  } catch {
+    console.log(
+      "Not a git repository or git command failed, skipping git info.",
+    );
+  }
+
   return {
     project: {
       name: projectName,
     },
-    git,
+    git: gitInfo,
     runtime,
     entrypoints: getEntrypoints(packageJson, projectName),
     codebase,

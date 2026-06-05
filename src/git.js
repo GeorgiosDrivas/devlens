@@ -24,7 +24,11 @@ const gitRemote = () => {
 };
 
 const gitLastCommit = () => {
-  return runGit("log -1 --pretty=format:'%h - %s'");
+  return childProcess
+    .execFileSync("git", ["log", "-1", "--pretty=format:%h - %s"], {
+      encoding: "utf8",
+    })
+    .trim();
 };
 
 const git = () => {

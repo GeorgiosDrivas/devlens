@@ -1,4 +1,4 @@
-const { hasAnyDependency } = require("../../utils").hasAnyDependency;
+const { hasAnyDependency } = require("../../utils");
 
 function hasTests(packageJson, scripts) {
   if (scripts?.test) return true;
