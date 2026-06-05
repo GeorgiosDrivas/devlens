@@ -61,8 +61,25 @@ function printHelp() {
   console.log(`\nIf no command is provided, "${DEFAULT_COMMAND}" is used.`);
 }
 
+function validateFlags(args) {
+  const validFlags = ["--json", "--out", "--target", "--help", "-h", "help"];
+
+  for (const arg of args) {
+    if (arg.startsWith("-")) {
+      // Check if this flag is valid
+      const flagName = arg.split("=")[0]; // Handle --flag=value syntax
+      if (!validFlags.includes(flagName)) {
+        console.error(`Unknown option ${arg}`);
+        process.exit(1);
+      }
+    }
+  }
+}
+
 async function main() {
   const args = process.argv.slice(2);
+
+  validateFlags(args);
 
   if (args.includes("help") || args.includes("--help") || args.includes("-h")) {
     printHelp();
