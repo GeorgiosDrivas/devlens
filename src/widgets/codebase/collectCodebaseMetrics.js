@@ -1,7 +1,7 @@
 const path = require("path");
 const fsp = require("fs").promises;
-const { walk } = require("../../utils");
-const { IGNORED_DIRS, IGNORED_PATH_SEGMENTS } = require("../../utils");
+const { walk, root } = require("../../utils");
+const { IGNORED_DIRS, IGNORED_PATH_SEGMENTS } = require("../../constants");
 const root = process.cwd();
 
 async function countLines(filePath) {
