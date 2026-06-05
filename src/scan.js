@@ -5,15 +5,16 @@ const {
   fsp,
   root,
   uniqueSorted,
-  pathExists,
   walk,
   findFirstExistingPath,
-  hasAnyDependency,
 } = require("./utils");
 const git = require("./git");
 const { detectConfigTools } = require("./widgets/detectConfigTools");
 const { IGNORED_DIRS, IGNORED_PATH_SEGMENTS } = require("./constants");
-const { getPackageManager } = require("./packageManagers");
+const { getPackageManager } = require("./widgets/getPackageManager");
+const { hasTests } = require("./widgets/source/hasTests");
+const { hasDockerConfig } = require("./widgets/source/hasDockerConfig");
+const { hasCiConfig } = require("./widgets/source/hasCiConfig");
 
 async function readJson(filePath) {
   try {
@@ -202,54 +203,6 @@ function buildDependencyCategories(packageJson) {
   categories.testing = uniqueSorted(categories.testing);
 
   return categories;
-}
-
-async function hasCiConfig() {
-  const candidates = [
-    path.join(root, ".github", "workflows"),
-    path.join(root, ".travis.yml"),
-    path.join(root, "azure-pipelines.yml"),
-    path.join(root, "circle.yml"),
-    path.join(root, ".circleci", "config.yml"),
-  ];
-
-  for (const candidate of candidates) {
-    if (await pathExists(candidate)) return true;
-  }
-
-  return false;
-}
-
-async function hasDockerConfig() {
-  const candidates = [
-    path.join(root, "Dockerfile"),
-    path.join(root, "docker-compose.yml"),
-    path.join(root, "docker-compose.yaml"),
-    path.join(root, ".dockerignore"),
-  ];
-
-  for (const candidate of candidates) {
-    if (await pathExists(candidate)) return true;
-  }
-
-  return false;
-}
-
-function hasTests(packageJson, scripts) {
-  if (scripts?.test) return true;
-
-  return hasAnyDependency(packageJson, [
-    "vitest",
-    "jest",
-    "mocha",
-    "cypress",
-    "playwright",
-    "@testing-library/react",
-    "@testing-library/vue",
-    "@testing-library/svelte",
-    "ava",
-    "tap",
-  ]);
 }
 
 async function scan() {

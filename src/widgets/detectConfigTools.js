@@ -1,10 +1,4 @@
-export function detectConfigTools({
-  configFiles,
-  packageJson,
-}: {
-  configFiles: string[];
-  packageJson?: Record<string, any>;
-}) {
+function detectConfigTools(configFiles, packageJson) {
   const tools = new Set();
 
   if (
@@ -61,3 +55,5 @@ export function detectConfigTools({
 
   return Array.from(tools).sort();
 }
+
+module.exports = { detectConfigTools };

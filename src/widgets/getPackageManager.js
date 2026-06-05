@@ -1,10 +1,4 @@
-export function getPackageManager({
-  packageJson,
-  rootFiles,
-}: {
-  packageJson: any;
-  rootFiles: string[];
-}): "npm" | "yarn" | "pnpm" {
+function getPackageManager(packageJson, rootFiles) {
   if (rootFiles.includes("pnpm-lock.yaml")) return "pnpm";
   if (rootFiles.includes("yarn.lock")) return "yarn";
   if (rootFiles.includes("package-lock.json")) return "npm";
@@ -15,3 +9,5 @@ export function getPackageManager({
   }
   return "npm";
 }
+
+module.exports = { getPackageManager };
