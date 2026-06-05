@@ -2,7 +2,6 @@ const path = require("path");
 const fsp = require("fs").promises;
 const { walk, root } = require("../../utils");
 const { IGNORED_DIRS, IGNORED_PATH_SEGMENTS } = require("../../constants");
-const root = process.cwd();
 
 async function countLines(filePath) {
   const contents = await fsp.readFile(filePath, "utf8");
