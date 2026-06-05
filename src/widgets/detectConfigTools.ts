@@ -1,4 +1,4 @@
-function detectConfigTools({
+export function detectConfigTools({
   configFiles,
   packageJson,
 }: {

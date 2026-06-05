@@ -11,8 +11,9 @@ const {
   hasAnyDependency,
 } = require("./utils");
 const git = require("./git");
-const detectConfigTools = require("./widgets/detectConfigTools");
+const { detectConfigTools } = require("./widgets/detectConfigTools");
 const { IGNORED_DIRS, IGNORED_PATH_SEGMENTS } = require("./constants");
+const { getPackageManager } = require("./packageManagers");
 
 async function readJson(filePath) {
   try {
@@ -21,18 +22,6 @@ async function readJson(filePath) {
   } catch {
     return null;
   }
-}
-
-function getPackageManager(packageJson, rootFiles) {
-  if (rootFiles.includes("pnpm-lock.yaml")) return "pnpm";
-  if (rootFiles.includes("yarn.lock")) return "yarn";
-  if (rootFiles.includes("package-lock.json")) return "npm";
-  if (packageJson?.packageManager) {
-    if (packageJson.packageManager.includes("pnpm")) return "pnpm";
-    if (packageJson.packageManager.includes("yarn")) return "yarn";
-    return "npm";
-  }
-  return "npm";
 }
 
 function getEntrypoints(packageJson, projectName) {
