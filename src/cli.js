@@ -66,8 +66,7 @@ function validateFlags(args) {
 
   for (const arg of args) {
     if (arg.startsWith("-")) {
-      // Check if this flag is valid
-      const flagName = arg.split("=")[0]; // Handle --flag=value syntax
+      const flagName = arg.split("=")[0];
       if (!validFlags.includes(flagName)) {
         console.error(`Unknown option ${arg}`);
         process.exit(1);
